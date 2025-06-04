@@ -671,6 +671,7 @@ func (comp *compiler) compileDynamicPage(buf *[]byte, vars Map) {
 
 func (comp *compiler) compileHTML(buf *[]byte) {
 	//todo: add plugin support with shortcodes
+	// may have plugins written in elixir, lua, or javascript
 
 	// minify HTML
 	m := minify.New()
