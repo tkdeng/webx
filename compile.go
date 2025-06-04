@@ -159,6 +159,8 @@ func compile(appConfig *Config) *compiler {
 	comp.compPages()
 	comp.compileLive()
 
+	//todo: generate manifest.json (and auto generate icons) and allow config.yml file to modify
+
 	PrintMsg("confirm", "Compiled Server!", 50, true)
 
 	return &comp
