@@ -420,7 +420,7 @@ func (comp *compiler) compPage(buf *[]byte, uriPath []string) Map {
 			comp.compileMD(&b)
 		}
 
-		comp.compPage(&b, uri)
+		comp.compPage(&b, uriPath)
 		return b, nil
 	}
 
