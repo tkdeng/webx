@@ -67,6 +67,8 @@ type App struct {
 
 type Map map[string]string
 
+var Helmet helmet.Config
+
 // New loads a new server
 func New(root string, config ...fiber.Config) (App, error) {
 	appConfig := Config{
@@ -119,7 +121,7 @@ func New(root string, config ...fiber.Config) (App, error) {
 		}
 	}
 
-	app.Use(helmet.New())
+	app.Use(helmet.New(Helmet))
 
 	// enforce specific domain and ip origins
 	app.Use(app.verifyOrigin(appConfig.Origins, appConfig.Proxies, appConfig.OriginErrHandler))
