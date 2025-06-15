@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
-	regex "github.com/tkdeng/goregex"
+	"github.com/tkdeng/regex"
 	"github.com/tkdeng/goutil"
 	"github.com/tkdeng/simplewebserver/cron"
 )
@@ -92,7 +92,7 @@ func (app *App) redirectSSL(httpPort, sslPort uint16) func(c fiber.Ctx) error {
 		}
 
 		var hostPort uint16
-		if port, err := strconv.Atoi(string(regex.Comp(`^.*:([0-9]+)$`).RepStr([]byte(goutil.Clean(c.Host())), []byte("$1")))); err == nil {
+		if port, err := strconv.Atoi(string(regex.Comp(`^.*:([0-9]+)$`).Rep([]byte(goutil.Clean(c.Host())), []byte("$1")))); err == nil {
 			hostPort = uint16(port)
 		}
 
@@ -119,7 +119,7 @@ func (app *App) redirectSSL(httpPort, sslPort uint16) func(c fiber.Ctx) error {
 //
 // @proxy: optional, if only one proxy is specified, the app will only listen to that ip address
 func (app *App) listenAutoTLS(httpPort, sslPort uint16, certPath string, proxy ...[]string) error {
-	certPath = string(regex.Comp(`\.(crt|key)$`).RepStrLit([]byte(certPath), []byte{}))
+	certPath = string(regex.Comp(`\.(crt|key)$`).RepLit([]byte(certPath), []byte{}))
 
 	if sslPort != 0 && certPath != "" {
 		port := ":" + strconv.Itoa(int(sslPort))

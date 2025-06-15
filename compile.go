@@ -20,7 +20,7 @@ import (
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
 	"github.com/tdewolff/minify/v2/js"
-	regex "github.com/tkdeng/goregex"
+	"github.com/tkdeng/regex"
 	"github.com/tkdeng/goutil"
 	"gopkg.in/yaml.v3"
 )
@@ -299,7 +299,7 @@ func (comp *compiler) compPages(path ...string) {
 			})
 		}
 
-		cDist := string(regex.Comp(`\/([^\/]+)$`).RepStr([]byte(dist), []byte("/#$1")))
+		cDist := string(regex.Comp(`\/([^\/]+)$`).Rep([]byte(dist), []byte("/#$1")))
 		os.Remove(dist)
 		os.Remove(dist + ".gz")
 
@@ -326,7 +326,7 @@ func (comp *compiler) compPages(path ...string) {
 		}
 	}
 
-	cDist := string(regex.Comp(`\/([^\/]+)$`).RepStr([]byte(dist), []byte("/#$1")))
+	cDist := string(regex.Comp(`\/([^\/]+)$`).Rep([]byte(dist), []byte("/#$1")))
 	os.Remove(cDist)
 
 	os.MkdirAll(filepath.Dir(dist), 0755)
@@ -347,7 +347,7 @@ func (comp *compiler) compPage(buf *[]byte, uriPath []string) Map {
 
 		// embed parent #page.html files
 		if strings.Join(uri, "/") != strings.Join(uriPath, "/") {
-			cPath := string(regex.Comp(`\/([^\/]+)$`).RepStr([]byte(path), []byte("/#$1")))
+			cPath := string(regex.Comp(`\/([^\/]+)$`).Rep([]byte(path), []byte("/#$1")))
 
 			if err != nil {
 				isMD = false
@@ -373,7 +373,7 @@ func (comp *compiler) compPage(buf *[]byte, uriPath []string) Map {
 
 		// embed @widgets
 		if err != nil {
-			dPath := string(regex.Comp(`\/([^\/]+)$`).RepStr([]byte(path), []byte("/@$1")))
+			dPath := string(regex.Comp(`\/([^\/]+)$`).Rep([]byte(path), []byte("/@$1")))
 
 			hasDyn := false
 			if _, e := os.Stat(dPath + ".html"); e == nil {
@@ -461,26 +461,26 @@ func (comp *compiler) compVars(buf *[]byte, uriPath []string, dynamic bool, conf
 		comp.compTitleVars(buf, name, configVars)
 	}
 
-	*buf = regex.Comp(`\{#?uri\}`).RepStrLit(*buf, EscapeHTML([]byte(strings.Join(uriPath, "/"))))
+	*buf = regex.Comp(`\{#?uri\}`).RepLit(*buf, EscapeHTML([]byte(strings.Join(uriPath, "/"))))
 
 	if len(uriPath) > 1 {
-		*buf = regex.Comp(`\{#?parent\}`).RepStrLit(*buf, EscapeHTML([]byte(uriPath[len(uriPath)-2])))
-		*buf = regex.Comp(`\{#?Parent\}`).RepStrLit(*buf, EscapeHTML([]byte(capWords(uriPath[len(uriPath)-2]))))
-		*buf = regex.Comp(`\{#?PARENT\}`).RepStrLit(*buf, EscapeHTML([]byte(strings.ToUpper(uriPath[len(uriPath)-2]))))
+		*buf = regex.Comp(`\{#?parent\}`).RepLit(*buf, EscapeHTML([]byte(uriPath[len(uriPath)-2])))
+		*buf = regex.Comp(`\{#?Parent\}`).RepLit(*buf, EscapeHTML([]byte(capWords(uriPath[len(uriPath)-2]))))
+		*buf = regex.Comp(`\{#?PARENT\}`).RepLit(*buf, EscapeHTML([]byte(strings.ToUpper(uriPath[len(uriPath)-2]))))
 	}
 
 	if len(uriPath) > 0 {
-		*buf = regex.Comp(`\{#?(page|parent)\}`).RepStrLit(*buf, EscapeHTML([]byte(uriPath[len(uriPath)-1])))
-		*buf = regex.Comp(`\{#?(Page|Parent)\}`).RepStrLit(*buf, EscapeHTML([]byte(capWords(uriPath[len(uriPath)-1]))))
-		*buf = regex.Comp(`\{#?(PAGE|PARENT)\}`).RepStrLit(*buf, EscapeHTML([]byte(strings.ToUpper(uriPath[len(uriPath)-1]))))
+		*buf = regex.Comp(`\{#?(page|parent)\}`).RepLit(*buf, EscapeHTML([]byte(uriPath[len(uriPath)-1])))
+		*buf = regex.Comp(`\{#?(Page|Parent)\}`).RepLit(*buf, EscapeHTML([]byte(capWords(uriPath[len(uriPath)-1]))))
+		*buf = regex.Comp(`\{#?(PAGE|PARENT)\}`).RepLit(*buf, EscapeHTML([]byte(strings.ToUpper(uriPath[len(uriPath)-1]))))
 
-		*buf = regex.Comp(`\{#?root\}`).RepStrLit(*buf, EscapeHTML([]byte(uriPath[0])))
-		*buf = regex.Comp(`\{#?Root\}`).RepStrLit(*buf, EscapeHTML([]byte(capWords(uriPath[0]))))
-		*buf = regex.Comp(`\{#?ROOT\}`).RepStrLit(*buf, EscapeHTML([]byte(strings.ToUpper(uriPath[0]))))
+		*buf = regex.Comp(`\{#?root\}`).RepLit(*buf, EscapeHTML([]byte(uriPath[0])))
+		*buf = regex.Comp(`\{#?Root\}`).RepLit(*buf, EscapeHTML([]byte(capWords(uriPath[0]))))
+		*buf = regex.Comp(`\{#?ROOT\}`).RepLit(*buf, EscapeHTML([]byte(strings.ToUpper(uriPath[0]))))
 	} else {
-		*buf = regex.Comp(`\{#?(page|parent|root)\}`).RepStrLit(*buf, EscapeHTML([]byte(comp.config.AppTitle)))
-		*buf = regex.Comp(`\{#?(Page|Parent|Root)\}`).RepStrLit(*buf, EscapeHTML([]byte(capWords(comp.config.AppTitle))))
-		*buf = regex.Comp(`\{#?(PAGE|PARENT|ROOT)\}`).RepStrLit(*buf, EscapeHTML([]byte(strings.ToUpper(comp.config.AppTitle))))
+		*buf = regex.Comp(`\{#?(page|parent|root)\}`).RepLit(*buf, EscapeHTML([]byte(comp.config.AppTitle)))
+		*buf = regex.Comp(`\{#?(Page|Parent|Root)\}`).RepLit(*buf, EscapeHTML([]byte(capWords(comp.config.AppTitle))))
+		*buf = regex.Comp(`\{#?(PAGE|PARENT|ROOT)\}`).RepLit(*buf, EscapeHTML([]byte(strings.ToUpper(comp.config.AppTitle))))
 	}
 
 	if !dynamic {
@@ -512,36 +512,36 @@ func (comp *compiler) compVars(buf *[]byte, uriPath []string, dynamic bool, conf
 }
 
 func (comp *compiler) compTitleVars(buf *[]byte, name string, configVars Map) {
-	*buf = regex.Comp(`\{#?sitetitle\}`).RepStrLit(*buf, EscapeHTML([]byte(comp.config.Title)))
+	*buf = regex.Comp(`\{#?sitetitle\}`).RepLit(*buf, EscapeHTML([]byte(comp.config.Title)))
 
 	if val, ok := configVars["title"]; ok {
-		*buf = regex.Comp(`\{#?title\}`).RepStrLit(*buf, EscapeHTML([]byte(val)))
+		*buf = regex.Comp(`\{#?title\}`).RepLit(*buf, EscapeHTML([]byte(val)))
 	} else if name != "" {
-		*buf = regex.Comp(`\{#?title\}`).RepStrLit(*buf, EscapeHTML([]byte(name+" | "+comp.config.Title)))
+		*buf = regex.Comp(`\{#?title\}`).RepLit(*buf, EscapeHTML([]byte(name+" | "+comp.config.Title)))
 	} else {
-		*buf = regex.Comp(`\{#?title\}`).RepStrLit(*buf, EscapeHTML([]byte(comp.config.Title)))
+		*buf = regex.Comp(`\{#?title\}`).RepLit(*buf, EscapeHTML([]byte(comp.config.Title)))
 	}
 
 	if val, ok := configVars["app"]; ok {
-		*buf = regex.Comp(`\{#?app\}`).RepStrLit(*buf, EscapeHTML([]byte(val)))
+		*buf = regex.Comp(`\{#?app\}`).RepLit(*buf, EscapeHTML([]byte(val)))
 	} else if val, ok := configVars["apptitle"]; ok {
-		*buf = regex.Comp(`\{#?app\}`).RepStrLit(*buf, EscapeHTML([]byte(val)))
+		*buf = regex.Comp(`\{#?app\}`).RepLit(*buf, EscapeHTML([]byte(val)))
 	} else {
-		*buf = regex.Comp(`\{#?app\}`).RepStrLit(*buf, EscapeHTML([]byte(comp.config.AppTitle)))
+		*buf = regex.Comp(`\{#?app\}`).RepLit(*buf, EscapeHTML([]byte(comp.config.AppTitle)))
 	}
 
 	if val, ok := configVars["desc"]; ok {
-		*buf = regex.Comp(`\{#?desc\}`).RepStrLit(*buf, EscapeHTML([]byte(val)))
+		*buf = regex.Comp(`\{#?desc\}`).RepLit(*buf, EscapeHTML([]byte(val)))
 	} else if val, ok := configVars["description"]; ok {
-		*buf = regex.Comp(`\{#?desc\}`).RepStrLit(*buf, EscapeHTML([]byte(val)))
+		*buf = regex.Comp(`\{#?desc\}`).RepLit(*buf, EscapeHTML([]byte(val)))
 	} else {
-		*buf = regex.Comp(`\{#?desc\}`).RepStrLit(*buf, EscapeHTML([]byte(comp.config.Desc)))
+		*buf = regex.Comp(`\{#?desc\}`).RepLit(*buf, EscapeHTML([]byte(comp.config.Desc)))
 	}
 
 	if val, ok := configVars["icon"]; ok {
-		*buf = regex.Comp(`\{#?icon\}`).RepStrLit(*buf, EscapeHTML([]byte(val)))
+		*buf = regex.Comp(`\{#?icon\}`).RepLit(*buf, EscapeHTML([]byte(val)))
 	} else {
-		*buf = regex.Comp(`\{#?icon\}`).RepStrLit(*buf, EscapeHTML([]byte(comp.config.Icon)))
+		*buf = regex.Comp(`\{#?icon\}`).RepLit(*buf, EscapeHTML([]byte(comp.config.Icon)))
 	}
 }
 
@@ -632,7 +632,7 @@ func (comp *compiler) precompDynamicPage(dir, dist string, page string, uriPath 
 		return
 	}
 
-	out, err := goutil.JoinPath(dist, string(regex.Comp(`\.(html|md)$`).RepStrLit([]byte(page), []byte(".html"))))
+	out, err := goutil.JoinPath(dist, string(regex.Comp(`\.(html|md)$`).RepLit([]byte(page), []byte(".html"))))
 	if err != nil {
 		return
 	}
@@ -643,7 +643,7 @@ func (comp *compiler) precompDynamicPage(dir, dist string, page string, uriPath 
 	}
 
 	buf := goutil.CloneBytes(tempLayout)
-	buf = regex.Comp(`\{@body\}`).RepStr(buf, b)
+	buf = regex.Comp(`\{@body\}`).Rep(buf, b)
 	configVars := comp.compPage(&buf, uriPath)
 	comp.compVars(&buf, uriPath, true, configVars)
 

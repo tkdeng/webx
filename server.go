@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/helmet"
 	"github.com/gofiber/fiber/v3/middleware/static"
-	regex "github.com/tkdeng/goregex"
+	"github.com/tkdeng/regex"
 	"github.com/tkdeng/goutil"
 )
 
@@ -227,13 +227,13 @@ func (app *App) Render(c fiber.Ctx, url string, vars ...Map) error {
 
 	// check for `#page.html` to load dynamic nonce keys
 	if _, err := os.Stat(path); err != nil {
-		cPath := string(regex.Comp(`\/([^\/]+)$`).RepStr([]byte(path), []byte("/#$1")))
+		cPath := string(regex.Comp(`\/([^\/]+)$`).Rep([]byte(path), []byte("/#$1")))
 		if buf, err := os.ReadFile(cPath); err == nil {
 			nonceKey := goutil.RandBytes(16)
 
-			buf = regex.Comp(`{nonce}`).RepStrLit(buf, nonceKey)
+			buf = regex.Comp(`{nonce}`).RepLit(buf, nonceKey)
 
-			cspValue := regex.Comp(`'nonce(-.*|)'`).RepStrLit([]byte(app.Config.cspText), []byte(`'nonce-`+string(nonceKey)+`'`))
+			cspValue := regex.Comp(`'nonce(-.*|)'`).RepLit([]byte(app.Config.cspText), []byte(`'nonce-`+string(nonceKey)+`'`))
 			c.Set(fiber.HeaderContentSecurityPolicy, string(cspValue))
 
 			c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
