@@ -7,6 +7,7 @@ require (
 	github.com/gofiber/fiber/v3 v3.0.0-beta.4
 	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
 	github.com/tdewolff/minify/v2 v2.23.8
+	github.com/tkdeng/gocrypt v1.0.1
 	github.com/tkdeng/goutil v0.8.0
 	github.com/tkdeng/regex v1.0.0
 	github.com/tkdeng/simplewebserver v0.3.1
@@ -34,8 +35,8 @@ require (
 	github.com/valyala/fasthttp v1.62.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
 )
