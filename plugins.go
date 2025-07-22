@@ -1,6 +1,9 @@
 package webx
 
-var plugins []*Plugin
+import "path/filepath"
+
+var plugins = []*Plugin{}
+var pluginPaths = map[string][]string{}
 
 type Plugin struct {
 	name   string
@@ -32,10 +35,22 @@ func (plugin *Plugin) Router(cb func(app App)) {
 	plugin.router = append(plugin.router, cb)
 }
 
-func (plugin *Plugin) Page(name string, buf []byte) {
+func (plugin *Plugin) Page(name string, buf []byte, path ...string) {
 	plugin.pages[name] = buf
+
+	if len(path) != 0 {
+		if p, err := filepath.Abs(path[0]); err == nil {
+			pluginPaths[p] = []string{name, plugin.name}
+		}
+	}
 }
 
-func (plugin *Plugin) Asset(name string, buf []byte) {
+func (plugin *Plugin) Asset(name string, buf []byte, path ...string) {
 	plugin.assets[name] = buf
+
+	if len(path) != 0 {
+		if p, err := filepath.Abs(path[0]); err == nil {
+			pluginPaths[p] = []string{name, plugin.name}
+		}
+	}
 }

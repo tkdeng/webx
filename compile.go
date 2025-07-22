@@ -255,11 +255,67 @@ func compile(appConfig *Config) *compiler {
 		}
 	}
 
+	if appConfig.DebugMode {
+		comp.compilePluginsLive()
+	}
+
 	//todo: generate manifest.json (and auto generate icons) and allow config.yml file to modify
 
 	PrintMsg("confirm", "Compiled Server!", 50, true)
 
 	return &comp
+}
+
+func (comp *compiler) compilePluginsLive() {
+	root, err := filepath.Abs(".")
+	if err != nil {
+		return
+	}
+
+	fw := goutil.FileWatcher()
+
+	fw.OnFileChange = func(path, op string) {
+		if strings.HasPrefix(path, comp.config.Root) {
+			return
+		}
+
+		relpath, err := filepath.Rel(root, path)
+		if err != nil {
+			return
+		}
+
+		if strings.HasPrefix(relpath, ".") || strings.HasSuffix(relpath, ".go") {
+			return
+		}
+
+		if name, ok := pluginPaths[path]; ok {
+			if buf, err := os.ReadFile(path); err == nil {
+				if out, err := goutil.JoinPath(comp.config.Root, "pages", name[0]); err == nil {
+					
+					if strings.HasSuffix(name[0], ".html") || strings.HasSuffix(name[0], ".md") {
+						buf = regex.JoinBytes(
+							"<!--! ", name[1], " -->", '\n',
+							buf,
+						)
+					}else if strings.HasSuffix(name[0], ".js") {
+						buf = regex.JoinBytes(
+							"//", "*! ", name[1], " */", '\n',
+							buf,
+						)
+					} else if strings.HasSuffix(name[0], ".css") {
+						buf = regex.JoinBytes(
+							"/*! ", name[1], " */", '\n',
+							buf,
+						)
+					}
+					
+					os.WriteFile(out, buf, 0755)
+				}
+			}
+		}
+	}
+
+	fw.WatchDir(root)
 }
 
 func (comp *compiler) compileLive() {
