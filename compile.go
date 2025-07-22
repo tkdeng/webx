@@ -20,8 +20,8 @@ import (
 	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
 	"github.com/tdewolff/minify/v2/js"
-	"github.com/tkdeng/regex"
 	"github.com/tkdeng/goutil"
+	"github.com/tkdeng/regex"
 	"gopkg.in/yaml.v3"
 )
 
@@ -60,6 +60,9 @@ var tempExWidget []byte
 //go:embed templates/example/@error.html
 var tempExError []byte
 
+//go:embed templates/example/config.css
+var tempExCssConfig []byte
+
 type compiler struct {
 	config *Config
 }
@@ -70,11 +73,16 @@ func compile(appConfig *Config) *compiler {
 		initExample = true
 	}
 
+	PrintMsg("warn", "Compiling Server...", 50, false)
+
 	os.MkdirAll(appConfig.Root, 0755)
 	os.MkdirAll(appConfig.Root+"/pages", 0755)
 	os.MkdirAll(appConfig.Root+"/theme", 0755)
 	os.MkdirAll(appConfig.Root+"/assets", 0755)
 	os.MkdirAll(appConfig.Root+"/db", 0755)
+
+	os.MkdirAll(appConfig.Root+"/plugins", 0755)
+	os.MkdirAll(appConfig.Root+"/plugins/assets", 0755)
 
 	if appConfig.PublicURI != "" {
 		os.MkdirAll(appConfig.Root+"/public", 0755)
@@ -82,8 +90,6 @@ func compile(appConfig *Config) *compiler {
 
 	//todo: sandbox download directory
 	// os.MkdirAll(appConfig.Root+"/download", 2600)
-
-	PrintMsg("warn", "Compiling Server Pages...", 50, false)
 
 	os.RemoveAll(appConfig.Root + "/dist")
 	if err := os.Mkdir(appConfig.Root+"/dist", 0755); err != nil {
@@ -112,6 +118,19 @@ func compile(appConfig *Config) *compiler {
 					';', b.Bytes(), ';',
 				)
 			}
+
+			for _, plugin := range plugins {
+				for name, buf := range plugin.assets {
+					if strings.HasSuffix(name, ".js") {
+						var b bytes.Buffer
+						if err := m.Minify("text/javascript", &b, bytes.NewBuffer(buf)); err == nil {
+							plugin.assets[name] = regex.JoinBytes(
+								';', b.Bytes(), ';',
+							)
+						}
+					}
+				}
+			}
 		}
 
 		// minify tempStyle
@@ -132,11 +151,42 @@ func compile(appConfig *Config) *compiler {
 					b.Bytes(),
 				)
 			}
+
+			for _, plugin := range plugins {
+				for name, buf := range plugin.assets {
+					if strings.HasSuffix(name, ".css") {
+						var b bytes.Buffer
+						if err := m.Minify("text/css", &b, bytes.NewBuffer(buf)); err == nil {
+							plugin.assets[name] = b.Bytes()
+						}
+					}
+				}
+			}
 		}
 	}
 
-	os.WriteFile(appConfig.Root+"/assets/core.js", coreScript, 0755)
-	os.WriteFile(appConfig.Root+"/assets/core.css", coreStyle, 0755)
+	os.WriteFile(appConfig.Root+"/plugins/assets/core.js", coreScript, 0755)
+	os.WriteFile(appConfig.Root+"/plugins/assets/core.css", coreStyle, 0755)
+
+	for _, plugin := range plugins {
+		for name, buf := range plugin.assets {
+			if path, err := goutil.JoinPath(appConfig.Root, "plugins/assets", name); err == nil {
+				if strings.HasSuffix(name, ".js") {
+					buf = regex.JoinBytes(
+						"//", "*! ", plugin.name, " */", '\n',
+						buf,
+					)
+				} else if strings.HasSuffix(name, ".css") {
+					buf = regex.JoinBytes(
+						"/*! ", plugin.name, " */", '\n',
+						buf,
+					)
+				}
+
+				os.WriteFile(path, buf, 0755)
+			}
+		}
+	}
 
 	if initExample {
 		os.WriteFile(appConfig.Root+"/config.yml", tempExConfig, 0755)
@@ -148,7 +198,30 @@ func compile(appConfig *Config) *compiler {
 		os.WriteFile(appConfig.Root+"/pages/about/body.md", tempExAbout, 0755)
 		os.WriteFile(appConfig.Root+"/pages/@widget.html", tempExWidget, 0755)
 		os.WriteFile(appConfig.Root+"/pages/@error.html", tempExError, 0755)
+
+		os.WriteFile(appConfig.Root+"/theme/config.css", tempExCssConfig, 0755)
 	}
+
+	for _, plugin := range plugins {
+		for name, buf := range plugin.pages {
+			if path, err := goutil.JoinPath(appConfig.Root, "pages", name); err == nil {
+				if _, err := os.Stat(path); err != nil {
+					os.MkdirAll(filepath.Dir(path), 0755)
+
+					if strings.HasSuffix(name, ".html") || strings.HasSuffix(name, ".md") {
+						buf = regex.JoinBytes(
+							"<!--! ", plugin.name, " -->", '\n',
+							buf,
+						)
+					}
+
+					os.WriteFile(path, buf, 0755)
+				}
+			}
+		}
+	}
+
+	PrintMsg("warn", "Compiling Server Pages...", 50, false)
 
 	comp := compiler{
 		config: appConfig,
@@ -158,6 +231,29 @@ func compile(appConfig *Config) *compiler {
 
 	comp.compPages()
 	comp.compileLive()
+
+	PrintMsg("warn", "Loading Plugins...", 50, false)
+
+	for _, plugin := range plugins {
+		if path, err := goutil.JoinPath(appConfig.Root, "plugins", plugin.name+".yml"); err == nil {
+			if _, err := os.Stat(path); err != nil {
+				os.MkdirAll(filepath.Dir(path), 0755)
+
+				configBuf := []byte{}
+				for key, val := range plugin.config {
+					configBuf = append(configBuf, regex.JoinBytes(
+						regex.Comp(`[^\w_\-]+`).RepLit([]byte(key), []byte{}), ':',
+						` "`, regex.Comp(`([\\"])`).Rep([]byte(val), []byte(`\$1`)), `"`,
+						'\n',
+					)...)
+				}
+
+				os.WriteFile(path, configBuf, 0755)
+			} else {
+				goutil.ReadConfig(path, &plugin.config)
+			}
+		}
+	}
 
 	//todo: generate manifest.json (and auto generate icons) and allow config.yml file to modify
 

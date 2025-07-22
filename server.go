@@ -132,6 +132,8 @@ func New(root string, config ...fiber.Config) (App, error) {
 		app.Get(appConfig.PublicURI, static.New(appConfig.Root+"/public", static.Config{Compress: compressAssets, Browse: true}))
 	}
 
+	app.Get("/assets/*", static.New(appConfig.Root+"/plugins/assets", static.Config{Compress: compressAssets}))
+
 	// reduce bot spam on post requests
 	app.Post("/api/*", app.BlockBotHeader)
 	app.Post("/apis/*", app.BlockBotHeader)
@@ -151,6 +153,12 @@ func New(root string, config ...fiber.Config) (App, error) {
 
 		return app.Render(c, url)
 	})
+
+	for _, plugin := range plugins {
+		for _, router := range plugin.router {
+			router(app)
+		}
+	}
 
 	return app, nil
 }
