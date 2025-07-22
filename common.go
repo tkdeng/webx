@@ -8,7 +8,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -18,12 +17,91 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
-	"github.com/tkdeng/regex"
 	"github.com/tkdeng/goutil"
+	"github.com/tkdeng/regex"
 	"github.com/tkdeng/simplewebserver/cron"
 )
 
-// VerifyOrigin can be added to `app.Use` to enforce that all connections
+// verifyHeaders runs a sanity check on common headers to help prevent spam from bad bots
+//
+// Notice: Do not rely on this check alone. It only preforms a basic check to reduce potential spam.
+func (app *App) verifyHeaders() func(c fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
+		if goutil.Clean(c.IP()) == "" {
+			return app.Error(c, 403, "Access denied. Suspicious request pattern.")
+		}
+
+		// User-Agent Sanity Check
+		if header := goutil.Clean(c.Get("User-Agent")); header == "" || len(header) < 15 {
+			return app.Error(c, 403, "Access denied. Suspicious request pattern.")
+		}
+
+		// Accept Header Sanity Check
+		if header := goutil.Clean(c.Get("Accept")); header == "" || !strings.Contains(header, "/") {
+			return app.Error(c, 403, "Access denied. Suspicious request pattern.")
+		}
+
+		// Accept-Encoding Header Sanity Check
+		if header := goutil.Clean(c.Get("Accept-Encoding")); header == "" || (!strings.Contains(header, "gzip") && !strings.Contains(header, "deflate") && !strings.Contains(header, "br")) {
+			return app.Error(c, 403, "Access denied. Suspicious request pattern.")
+		}
+
+		return c.Next()
+	}
+}
+
+// IsBotHeader does a lightweight check for any missing or susspicious headers for bots
+//
+// returns true if it could be a bot
+//
+// Notice: Do not rely on this check alone. It only preforms a basic check to reduce potential spam.
+func IsBotHeader(c fiber.Ctx) bool {
+	// User-Agent Sanity Check
+	if userAgent := goutil.Clean(c.Get("User-Agent")); strings.Contains(strings.ToLower(userAgent), "bot") ||
+		strings.Contains(strings.ToLower(userAgent), "crawler") ||
+		strings.Contains(strings.ToLower(userAgent), "spider") {
+		return true
+	}
+
+	// Accept-Language Header Sanity Check
+	if header := goutil.Clean(c.Get("Accept-Language")); header == "" || (!strings.Contains(header, ",") && len(header) < 3) {
+		return true
+	}
+
+	// Cache-Control Header Sanity Check
+	if goutil.Clean(c.Get("Cache-Control")) == "" {
+		return true
+	}
+
+	// Connection Header Sanity Check (Conditional on HTTP/1.1)
+	// Only check if it's HTTP/1.1. In HTTP/2, Connection header is generally omitted.
+	if c.Protocol() == "HTTP/1.1" {
+		connectionHeader := c.Get("Connection")
+		if !strings.Contains(strings.ToLower(connectionHeader), "keep-alive") {
+			return true
+		}
+	}
+
+	// Content-Length for POST requests
+	if c.Method() == fiber.MethodPost {
+		contentLengthStr := c.Get("Content-Length")
+		if contentLengthStr == "" {
+			return true
+		} else {
+			contentLength, err := strconv.Atoi(contentLengthStr)
+			// A typical login form submission will have a non-zero, reasonable content length.
+			// You might inspect your actual login form's payload size and set a min/max.
+			// For now, a very basic check:
+			if err != nil || contentLength <= 0 || contentLength > 1024 { // Example: max 1KB for login payload
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// verifyOrigin can be added to `app.Use` to enforce that all connections
 // are coming through a specified domain and proxy ip
 //
 // @origin: list of valid domains
@@ -31,7 +109,7 @@ import (
 // @proxy: list of valid ip proxies
 //
 // @handleErr: optional, allows you to define a function for handling invalid origins, instead of returning the default http error
-func (app *App) verifyOrigin(origin []string, proxy []string, handleErr ...func(c fiber.Ctx, err error) error) func(c fiber.Ctx) error {
+func (app *App) verifyOrigin(origin []string, proxy []string) func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
 		hostname := goutil.Clean(c.Hostname())
 		ip := goutil.Clean(c.IP())
@@ -49,12 +127,7 @@ func (app *App) verifyOrigin(origin []string, proxy []string, handleErr ...func(
 		}
 
 		if !validOrigin {
-			if len(handleErr) != 0 {
-				return handleErr[0](c, errors.New("Origin Not Allowed: "+hostname))
-			}
-
-			c.SendStatus(403)
-			return c.SendString("Origin Not Allowed: " + hostname)
+			return app.Error(c, 403, "Origin Not Allowed: "+hostname)
 		}
 
 		validProxy := false
@@ -70,19 +143,14 @@ func (app *App) verifyOrigin(origin []string, proxy []string, handleErr ...func(
 		}
 
 		if !validProxy || !c.IsProxyTrusted() {
-			if len(handleErr) != 0 {
-				return handleErr[0](c, errors.New("IP Proxy Not Allowed: "+ip))
-			}
-
-			c.SendStatus(403)
-			return c.SendString("IP Proxy Not Allowed: " + ip)
+			return app.Error(c, 403, "IP Proxy Not Allowed: "+ip)
 		}
 
 		return c.Next()
 	}
 }
 
-// RedirectSSL can be added to `app.Use` to auto redirect http to https
+// redirectSSL can be added to `app.Use` to auto redirect http to https
 //
 // @httpPort: 80, @sslPort: 443
 func (app *App) redirectSSL(httpPort, sslPort uint16) func(c fiber.Ctx) error {

@@ -10,8 +10,8 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/helmet"
 	"github.com/gofiber/fiber/v3/middleware/static"
-	"github.com/tkdeng/regex"
 	"github.com/tkdeng/goutil"
+	"github.com/tkdeng/regex"
 )
 
 type Config struct {
@@ -26,8 +26,6 @@ type Config struct {
 	Proxies []string
 
 	Vars Map
-
-	OriginErrHandler func(c fiber.Ctx, err error) error
 
 	PortHTTP uint16
 	PortSSL  uint16
@@ -114,17 +112,13 @@ func New(root string, config ...fiber.Config) (App, error) {
 		compiler: compiler,
 	}
 
-	if appConfig.OriginErrHandler == nil {
-		appConfig.OriginErrHandler = func(c fiber.Ctx, err error) error {
-			c.SendStatus(403)
-			return c.SendString(err.Error())
-		}
-	}
-
 	app.Use(helmet.New(Helmet))
 
+	// preform header sanity check to reduce potential bot spam
+	app.Use(app.verifyHeaders())
+
 	// enforce specific domain and ip origins
-	app.Use(app.verifyOrigin(appConfig.Origins, appConfig.Proxies, appConfig.OriginErrHandler))
+	app.Use(app.verifyOrigin(appConfig.Origins, appConfig.Proxies))
 
 	// auto redirect http to https
 	if appConfig.PortSSL != 0 {
