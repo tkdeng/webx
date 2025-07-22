@@ -290,26 +290,35 @@ func (comp *compiler) compilePluginsLive() {
 
 		if name, ok := pluginPaths[path]; ok {
 			if buf, err := os.ReadFile(path); err == nil {
-				if out, err := goutil.JoinPath(comp.config.Root, "pages", name[0]); err == nil {
-					
-					if strings.HasSuffix(name[0], ".html") || strings.HasSuffix(name[0], ".md") {
-						buf = regex.JoinBytes(
-							"<!--! ", name[1], " -->", '\n',
-							buf,
-						)
-					}else if strings.HasSuffix(name[0], ".js") {
-						buf = regex.JoinBytes(
-							"//", "*! ", name[1], " */", '\n',
-							buf,
-						)
-					} else if strings.HasSuffix(name[0], ".css") {
-						buf = regex.JoinBytes(
-							"/*! ", name[1], " */", '\n',
-							buf,
-						)
+				
+				isPage := false
+				if strings.HasSuffix(name[0], ".html") || strings.HasSuffix(name[0], ".md") {
+					isPage = true
+
+					buf = regex.JoinBytes(
+						"<!--! ", name[1], " -->", '\n',
+						buf,
+					)
+				}else if strings.HasSuffix(name[0], ".js") {
+					buf = regex.JoinBytes(
+						"//", "*! ", name[1], " */", '\n',
+						buf,
+					)
+				} else if strings.HasSuffix(name[0], ".css") {
+					buf = regex.JoinBytes(
+						"/*! ", name[1], " */", '\n',
+						buf,
+					)
+				}
+
+				if isPage {
+					if out, err := goutil.JoinPath(comp.config.Root, "pages", name[0]); err == nil {
+						os.WriteFile(out, buf, 0755)
 					}
-					
-					os.WriteFile(out, buf, 0755)
+				}else{
+					if out, err := goutil.JoinPath(comp.config.Root, "plugins/assets", name[0]); err == nil {
+						os.WriteFile(out, buf, 0755)
+					}
 				}
 			}
 		}
