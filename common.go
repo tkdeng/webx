@@ -101,6 +101,16 @@ func IsBotHeader(c fiber.Ctx) bool {
 	return false
 }
 
+// BlockBotHeader does a lightweight check for any missing or susspicious headers for bots
+//
+// Notice: Do not rely on this check alone. It only preforms a basic check to reduce potential spam.
+func (app *App) BlockBotHeader(c fiber.Ctx) error {
+	if IsBotHeader(c) {
+		return app.Error(c, 403, "Access denied. Suspicious request pattern.")
+	}
+	return c.Next()
+}
+
 // verifyOrigin can be added to `app.Use` to enforce that all connections
 // are coming through a specified domain and proxy ip
 //

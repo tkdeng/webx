@@ -132,6 +132,10 @@ func New(root string, config ...fiber.Config) (App, error) {
 		app.Get(appConfig.PublicURI, static.New(appConfig.Root+"/public", static.Config{Compress: compressAssets, Browse: true}))
 	}
 
+	// reduce bot spam on post requests
+	app.Post("/api/*", app.BlockBotHeader)
+	app.Post("/apis/*", app.BlockBotHeader)
+
 	// app.Use("/*", static.New(appConfig.Root+"/dist", static.Config{Compress: compressAssets}))
 
 	app.Use("/*", func(c fiber.Ctx) error {
