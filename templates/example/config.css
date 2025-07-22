@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark light;
-  --font-size: 1.2rem;
+  font-size: 1.2rem;
 
   --ff-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
   --ff-serif: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'URW Bookman L', 'Georgia Pro', Georgia, serif;
