@@ -29,6 +29,11 @@ type FormCtx struct {
 	token       string
 }
 
+// NewForm creates a new form handler.
+//
+// This method allows easily managing session verification for user forms.
+//
+// Note: this method assumes forms will be submitted with the client fetch api.
 func (app App) NewForm(uri string, cb func(c FormCtx) error) *FormHandler {
 	sessionHash := string(goutil.URandBytes(256))
 	if hash, err := gocrypt.GenerateSalt(256); err == nil {
@@ -97,6 +102,10 @@ func (app App) NewForm(uri string, cb func(c FormCtx) error) *FormHandler {
 	}
 }
 
+// API verifies and continues a verified form session, and updates the token every request.
+//
+// Note: this method assumes forms will be submitted with the client fetch api.
+// Your API should include the "session" and updated "token" on every request.
 func (handler *FormHandler) API(uri string, cb func(c FormCtx) error) {
 	handler.app.Use(uri, func(c fiber.Ctx) error {
 		body, err := goutil.JSON.Parse(goutil.Clean(c.Body()))
