@@ -95,6 +95,8 @@ func (app App) NewForm(uri string, cb func(c FormCtx) error) *FormHandler {
 		})
 	})
 
+	//todo: add client side wasm and js for form handler
+
 	return &FormHandler{
 		app:         app,
 		sessionHash: sessionHash,
