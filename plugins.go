@@ -8,6 +8,7 @@ var pluginPaths = map[string][]string{}
 type Plugin struct {
 	name   string
 	config map[string]string
+	compile []func(config *Config)
 	router []func(app App)
 	pages  map[string][]byte
 	assets map[string][]byte
@@ -21,6 +22,7 @@ func NewPlugin(name string, defConfig ...map[string]string) *Plugin {
 	plugin := &Plugin{
 		name:   name,
 		config: defConfig[0],
+		compile: []func(config *Config){},
 		router: []func(app App){},
 		pages:  map[string][]byte{},
 		assets: map[string][]byte{},
@@ -29,6 +31,10 @@ func NewPlugin(name string, defConfig ...map[string]string) *Plugin {
 	plugins = append(plugins, plugin)
 
 	return plugin
+}
+
+func (plugin *Plugin) Compile(cb func(config *Config)) {
+	plugin.compile = append(plugin.compile, cb)
 }
 
 func (plugin *Plugin) Router(cb func(app App)) {

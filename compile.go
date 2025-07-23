@@ -253,6 +253,10 @@ func compile(appConfig *Config) *compiler {
 				goutil.ReadConfig(path, &plugin.config)
 			}
 		}
+
+		for _, cb := range plugin.compile {
+			cb(appConfig)
+		}
 	}
 
 	if appConfig.DebugMode {
