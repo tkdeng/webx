@@ -12,5 +12,7 @@ func main() {
 	global := js.Global()
 	_ = global
 
+	//todo: setup form js and wasm
+
 	fmt.Println("Hello, WASM!")
 }
