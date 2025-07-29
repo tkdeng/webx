@@ -7,8 +7,9 @@ require (
 	github.com/gofiber/fiber/v3 v3.0.0-beta.5
 	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
 	github.com/tdewolff/minify/v2 v2.23.10
+	github.com/tkdeng/gobash v0.0.0-20240829205649-8eb77a299f33
 	github.com/tkdeng/gocrypt v1.0.1
-	github.com/tkdeng/goutil v0.8.1
+	github.com/tkdeng/goutil v0.8.2
 	github.com/tkdeng/regex v1.0.0
 	github.com/tkdeng/simplewebserver v0.3.1
 	gopkg.in/yaml.v3 v3.0.1

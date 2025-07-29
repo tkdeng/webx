@@ -1,0 +1,20 @@
+:root {
+  color-scheme: dark light;
+  font-size: 1.2rem;
+
+  --ff-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  --ff-serif: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'URW Bookman L', 'Georgia Pro', Georgia, serif;
+  --ff-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --ff-cursive: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;
+  --ff-logo: 'Comfortaa', 'Comfortaa Regular', 'Varela Round', Seravek, serif;
+
+  --bg: light-dark(#ffffff, #1a1a1a);
+  --text: light-dark(#0f0f0f, #ffffff);
+  --link: light-dark(#166285, #1f8bbd);
+
+  --primary: light-dark(#20b6b6, #17e6e6);
+  --primary-bg: light-dark(#0fa8a8, #0fc1c1);
+  --accent: light-dark(#2eb737, #31db3c);
+  --dark: light-dark(#3d3d3d, #0f0f0f);
+  --light: light-dark(#c4c4c4, #3d3d3d);
+}

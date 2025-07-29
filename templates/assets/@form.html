@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="/assets/form.css"/>
+<script src="/assets/form.js" defer></script>
+<main class="form">
+  <div class="bg"></div>
+  <div class="form">
+    <h1>Login / Signup</h1>
+    <form action="/login" mode="login" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="session" value="{session}"/>
+      <input type="hidden" name="token" value="{token}"/>
+
+      <div class="wrapper">
+        <label>Phone Number</label>
+        <input type="tel" name="phone" required/>
+      </div>
+
+      <input type="submit" value="Send OTP"/>
+    </form>
+    <span class="status"></span>
+  </div>
+</main>

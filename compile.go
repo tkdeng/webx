@@ -3,7 +3,6 @@ package webx
 import (
 	"bytes"
 	"compress/gzip"
-	_ "embed"
 	"errors"
 	"math/rand"
 	"os"
@@ -17,9 +16,7 @@ import (
 	mdhtml "github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/tdewolff/minify/v2"
-	"github.com/tdewolff/minify/v2/css"
 	"github.com/tdewolff/minify/v2/html"
-	"github.com/tdewolff/minify/v2/js"
 	"github.com/tkdeng/goutil"
 	"github.com/tkdeng/regex"
 	"gopkg.in/yaml.v3"
@@ -27,41 +24,8 @@ import (
 
 var DebugCompiler = false
 
-//go:embed templates/layout.html
-var tempLayout []byte
-
-//go:embed templates/core.js
-var tempScript []byte
-
-//go:embed templates/core.css
-var tempStyle []byte
-
-//go:embed templates/example/config.yml
-var tempExConfig []byte
-
-//go:embed templates/example/csp.yml
-var tempExCSP []byte
-
-//go:embed templates/example/head.html
-var tempExHead []byte
-
-//go:embed templates/example/header.html
-var tempExHeader []byte
-
-//go:embed templates/example/body.md
-var tempExBody []byte
-
-//go:embed templates/example/about.md
-var tempExAbout []byte
-
-//go:embed templates/example/@widget.html
-var tempExWidget []byte
-
-//go:embed templates/example/@error.html
-var tempExError []byte
-
-//go:embed templates/example/config.css
-var tempExCssConfig []byte
+// only enable in server_test.go
+var modDevelopmentMode = false
 
 type compiler struct {
 	config *Config
@@ -73,12 +37,17 @@ func compile(appConfig *Config) *compiler {
 		initExample = true
 	}
 
+	if modDevelopmentMode {
+		PrintMsg("error", "Module Development Mode!", 50, true)
+	}
+
 	PrintMsg("warn", "Compiling Server...", 50, false)
 
 	os.MkdirAll(appConfig.Root, 0755)
 	os.MkdirAll(appConfig.Root+"/pages", 0755)
 	os.MkdirAll(appConfig.Root+"/theme", 0755)
 	os.MkdirAll(appConfig.Root+"/assets", 0755)
+	os.MkdirAll(appConfig.Root+"/wasm", 0755)
 	os.MkdirAll(appConfig.Root+"/db", 0755)
 
 	os.MkdirAll(appConfig.Root+"/plugins", 0755)
@@ -96,77 +65,7 @@ func compile(appConfig *Config) *compiler {
 		panic(err)
 	}
 
-	coreScript := goutil.CloneBytes(tempScript)
-	coreStyle := goutil.CloneBytes(tempStyle)
-
-	if !appConfig.DebugMode {
-		// minify tempScript
-		{
-			comment := []byte{}
-			coreScript = regex.Comp(`(?s)^(/?/\*![^\r\n]*?\*/)\r?\n?`).RepFunc(coreScript, func(data func(int) []byte) []byte {
-				comment = data(1)
-				return []byte{}
-			})
-
-			m := minify.New()
-			m.Add("text/javascript", &js.Minifier{})
-
-			var b bytes.Buffer
-			if err := m.Minify("text/javascript", &b, bytes.NewBuffer(coreScript)); err == nil {
-				coreScript = regex.JoinBytes(
-					comment, '\n',
-					';', b.Bytes(), ';',
-				)
-			}
-
-			for _, plugin := range plugins {
-				for name, buf := range plugin.assets {
-					if strings.HasSuffix(name, ".js") {
-						var b bytes.Buffer
-						if err := m.Minify("text/javascript", &b, bytes.NewBuffer(buf)); err == nil {
-							plugin.assets[name] = regex.JoinBytes(
-								';', b.Bytes(), ';',
-							)
-						}
-					}
-				}
-			}
-		}
-
-		// minify tempStyle
-		{
-			comment := []byte{}
-			coreStyle = regex.Comp(`(?s)^(/?/\*![^\r\n]*?\*/)\r?\n?`).RepFunc(coreStyle, func(data func(int) []byte) []byte {
-				comment = data(1)
-				return []byte{}
-			})
-
-			m := minify.New()
-			m.Add("text/css", &css.Minifier{})
-
-			var b bytes.Buffer
-			if err := m.Minify("text/css", &b, bytes.NewBuffer(coreStyle)); err == nil {
-				coreStyle = regex.JoinBytes(
-					comment, '\n',
-					b.Bytes(),
-				)
-			}
-
-			for _, plugin := range plugins {
-				for name, buf := range plugin.assets {
-					if strings.HasSuffix(name, ".css") {
-						var b bytes.Buffer
-						if err := m.Minify("text/css", &b, bytes.NewBuffer(buf)); err == nil {
-							plugin.assets[name] = b.Bytes()
-						}
-					}
-				}
-			}
-		}
-	}
-
-	os.WriteFile(appConfig.Root+"/plugins/assets/core.js", coreScript, 0755)
-	os.WriteFile(appConfig.Root+"/plugins/assets/core.css", coreStyle, 0755)
+	compileTemplates(appConfig, initExample)
 
 	for _, plugin := range plugins {
 		for name, buf := range plugin.assets {
@@ -186,20 +85,6 @@ func compile(appConfig *Config) *compiler {
 				os.WriteFile(path, buf, 0755)
 			}
 		}
-	}
-
-	if initExample {
-		os.WriteFile(appConfig.Root+"/config.yml", tempExConfig, 0755)
-		os.WriteFile(appConfig.Root+"/pages/csp.yml", tempExCSP, 0755)
-		os.WriteFile(appConfig.Root+"/pages/head.html", tempExHead, 0755)
-		os.WriteFile(appConfig.Root+"/pages/header.html", tempExHeader, 0755)
-		os.WriteFile(appConfig.Root+"/pages/body.md", tempExBody, 0755)
-		os.MkdirAll(appConfig.Root+"/pages/about", 0755)
-		os.WriteFile(appConfig.Root+"/pages/about/body.md", tempExAbout, 0755)
-		os.WriteFile(appConfig.Root+"/pages/@widget.html", tempExWidget, 0755)
-		os.WriteFile(appConfig.Root+"/pages/@error.html", tempExError, 0755)
-
-		os.WriteFile(appConfig.Root+"/theme/config.css", tempExCssConfig, 0755)
 	}
 
 	for _, plugin := range plugins {
@@ -231,6 +116,10 @@ func compile(appConfig *Config) *compiler {
 
 	comp.compPages()
 	comp.compileLive()
+
+	PrintMsg("warn", "Compiling WASM...", 50, false)
+
+	comp.compWASM()
 
 	PrintMsg("warn", "Loading Plugins...", 50, false)
 
@@ -294,7 +183,7 @@ func (comp *compiler) compilePluginsLive() {
 
 		if name, ok := pluginPaths[path]; ok {
 			if buf, err := os.ReadFile(path); err == nil {
-				
+
 				isPage := false
 				if strings.HasSuffix(name[0], ".html") || strings.HasSuffix(name[0], ".md") {
 					isPage = true
@@ -303,7 +192,7 @@ func (comp *compiler) compilePluginsLive() {
 						"<!--! ", name[1], " -->", '\n',
 						buf,
 					)
-				}else if strings.HasSuffix(name[0], ".js") {
+				} else if strings.HasSuffix(name[0], ".js") {
 					buf = regex.JoinBytes(
 						"//", "*! ", name[1], " */", '\n',
 						buf,
@@ -319,7 +208,7 @@ func (comp *compiler) compilePluginsLive() {
 					if out, err := goutil.JoinPath(comp.config.Root, "pages", name[0]); err == nil {
 						os.WriteFile(out, buf, 0755)
 					}
-				}else{
+				} else {
 					if out, err := goutil.JoinPath(comp.config.Root, "plugins/assets", name[0]); err == nil {
 						os.WriteFile(out, buf, 0755)
 					}
