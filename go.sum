@@ -49,8 +49,8 @@ github.com/tkdeng/gobash v0.0.0-20240829205649-8eb77a299f33 h1:qygIK2VjxvC44FY2v
 github.com/tkdeng/gobash v0.0.0-20240829205649-8eb77a299f33/go.mod h1:b10AQGgYtMs7NsoU8WbczfCj1Cyo8F53kqGQCepzNgQ=
 github.com/tkdeng/gocrypt v1.0.1 h1:FB3n9b2yfMqHNen8Z2CzX+3vIoxZ9OjXzb4ScnLvfEI=
 github.com/tkdeng/gocrypt v1.0.1/go.mod h1:Ev1jGk4Ks6sYqh5SNw9tq9quovVH/Hz6BKMUbfDUWS8=
-github.com/tkdeng/goutil v0.8.2 h1:PbUgT6TGCKF3B9nuzPf4FRwvdx2KdASYrXD1UUqRNpQ=
-github.com/tkdeng/goutil v0.8.2/go.mod h1:ddDSIiBYjCt/homrov6dCfvUH5u1j2Hv0BdzZfGWpPA=
+github.com/tkdeng/goutil v0.9.2 h1:D0SCXBqIaHTmmCB7BZCaBj/nDos4eUDAoGIIbRDDABw=
+github.com/tkdeng/goutil v0.9.2/go.mod h1:ddDSIiBYjCt/homrov6dCfvUH5u1j2Hv0BdzZfGWpPA=
 github.com/tkdeng/regex v1.0.0 h1:YAKfkEMpxbplCTT9mu7Pl49KCmRrlCGxqfROs32Dx5w=
 github.com/tkdeng/regex v1.0.0/go.mod h1:a+sj+UKs2xDKSm1PtQgHYd4TJu0ty925XiyVCa7245E=
 github.com/tkdeng/simplewebserver v0.3.1 h1:Y3pWQkPN8Q1PyCX8Xmr+sgnkCXjiczitsRt3/gkdMrI=

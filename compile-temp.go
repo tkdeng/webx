@@ -121,6 +121,7 @@ func compileTemplates(appConfig *Config, initExample bool) {
 	if initExample {
 		addTemplateExample("config.yml", appConfig.Root+"/config.yml")
 		addTemplateExample("csp.yml", appConfig.Root+"/pages/csp.yml")
+		addTemplateExample("theme.yml", appConfig.Root+"/theme/theme.yml")
 		addTemplateExample("config.css", appConfig.Root+"/theme/config.css")
 
 		addTemplateExample("head.html", appConfig.Root+"/pages/head.html")

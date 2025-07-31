@@ -7,7 +7,7 @@ import (
 func Test(t *testing.T) {
 	modDevelopmentMode = true
 
-	// DebugCompiler = true
+	DebugCompiler = true
 
 	app, err := New("./test")
 	if err != nil {

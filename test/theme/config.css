@@ -15,6 +15,10 @@
   --primary: light-dark(#20b6b6, #17e6e6);
   --primary-bg: light-dark(#0fa8a8, #0fc1c1);
   --accent: light-dark(#2eb737, #31db3c);
+
+  --confirm: light-dark(#2eb737, #31db3c);
+  --warn: light-dark(#b72e2e, #db3131);
+
   --dark: light-dark(#3d3d3d, #0f0f0f);
   --light: light-dark(#c4c4c4, #3d3d3d);
 }

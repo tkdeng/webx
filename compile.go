@@ -117,6 +117,10 @@ func compile(appConfig *Config) *compiler {
 	comp.compPages()
 	comp.compileLive()
 
+	PrintMsg("warn", "Compiling Theme...", 50, false)
+
+	comp.compTheme()
+
 	PrintMsg("warn", "Compiling WASM...", 50, false)
 
 	comp.compWASM()
