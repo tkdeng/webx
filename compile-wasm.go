@@ -15,7 +15,7 @@ import (
 
 //todo: see if embedding directories in go is possible
 
-//go:embed wasm_dist/*
+//go:embed templates/wasm/*
 var wasmCoreFiles embed.FS
 
 func (comp *compiler) compWASM() {
@@ -41,7 +41,7 @@ func (comp *compiler) compWASM() {
 }
 
 func (comp *compiler) compCoreWASM() {
-	files, err := wasmCoreFiles.ReadDir("wasm_dist")
+	files, err := wasmCoreFiles.ReadDir("templates/wasm")
 	if err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func (comp *compiler) compCoreWASM() {
 	for _, file := range files {
 		name := file.Name()
 		if !file.IsDir() && strings.HasSuffix(name, ".wasm") {
-			if buf, err := wasmCoreFiles.ReadFile("wasm_dist/" + name); err == nil {
+			if buf, err := wasmCoreFiles.ReadFile("templates/wasm/" + name); err == nil {
 				if assetPath, err := goutil.JoinPath(comp.config.Root, "plugins/assets", file.Name()); err == nil {
 					os.WriteFile(assetPath, buf, 0755)
 				}
@@ -62,9 +62,9 @@ func (comp *compiler) compCoreWASM() {
 		return
 	}
 
-	os.RemoveAll("wasm_dist")
-	os.MkdirAll("wasm_dist", 0755)
-	os.WriteFile("wasm_dist/_", []byte{}, 0755)
+	os.RemoveAll("templates/wasm")
+	os.MkdirAll("templates/wasm", 0755)
+	os.WriteFile("templates/wasm/_", []byte{}, 0755)
 
 	files, err = os.ReadDir("wasm")
 	if err != nil {
@@ -74,7 +74,7 @@ func (comp *compiler) compCoreWASM() {
 	for _, file := range files {
 		if file.IsDir() {
 			if wasmPath, err := goutil.JoinPath("wasm", file.Name()); err == nil {
-				if outPath, err := goutil.JoinPath("wasm_dist", file.Name()+".wasm"); err == nil {
+				if outPath, err := goutil.JoinPath("templates/wasm", file.Name()+".wasm"); err == nil {
 					_, err := bash.Run([]string{"go", "build", "-o", outPath, file.Name()}, wasmPath, []string{"GOOS=js", "GOARCH=wasm"})
 					if err != nil {
 						fmt.Println(err)
@@ -99,7 +99,7 @@ func (comp *compiler) compCoreWASM() {
 				name := strings.SplitN(relPath, "/", 2)[0]
 
 				if wasmPath, err := goutil.JoinPath(wasmRoot, name); err == nil {
-					if outPath, err := goutil.JoinPath("wasm_dist", name+".wasm"); err == nil {
+					if outPath, err := goutil.JoinPath("templates/wasm", name+".wasm"); err == nil {
 						_, err := bash.Run([]string{"go", "build", "-o", outPath, name}, wasmPath, []string{"GOOS=js", "GOARCH=wasm"})
 						if err != nil {
 							fmt.Println(err)
@@ -120,7 +120,7 @@ func (comp *compiler) compCoreWASM() {
 				name := strings.SplitN(relPath, "/", 2)[0]
 				fmt.Println(name)
 
-				if outPath, err := goutil.JoinPath("wasm_dist", name+".wasm"); err == nil {
+				if outPath, err := goutil.JoinPath("templates/wasm", name+".wasm"); err == nil {
 					os.Remove(outPath)
 
 					if assetPath, err := goutil.JoinPath(comp.config.Root, "plugins/assets", name+".wasm"); err == nil {

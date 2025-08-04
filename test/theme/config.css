@@ -1,5 +1,4 @@
 :root {
-  color-scheme: dark light;
   font-size: 1.2rem;
 
   --ff-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
@@ -8,17 +7,85 @@
   --ff-cursive: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;
   --ff-logo: 'Comfortaa', 'Comfortaa Regular', 'Varela Round', Seravek, serif;
 
-  --bg: light-dark(#ffffff, #1a1a1a);
-  --text: light-dark(#0f0f0f, #ffffff);
-  --link: light-dark(#166285, #1f8bbd);
+  --h-accent: 170;
+  --h-confirm: 145;
+  --h-warn: 40;
+  --h-link: 220;
+  --h-primary: 195;
 
-  --primary: light-dark(#20b6b6, #17e6e6);
-  --primary-bg: light-dark(#0fa8a8, #0fc1c1);
-  --accent: light-dark(#2eb737, #31db3c);
+  color-scheme: dark;
 
-  --confirm: light-dark(#2eb737, #31db3c);
-  --warn: light-dark(#b72e2e, #db3131);
+  --c-bg: 0;
+  --c-text: 0;
+  --c-fg: 0.15;
+  --c-color: 0.25;
 
-  --dark: light-dark(#3d3d3d, #0f0f0f);
-  --light: light-dark(#c4c4c4, #3d3d3d);
+  --l-bg-dark: 0%;
+  --l-bg: 5%;
+  --l-bg-light: 10%;
+  --l-fg: 25%;
+  --l-text: 95%;
+  --l-text-muted: 75%;
+
+  --l-link: 55%;
+  --l-primary: 75%;
+  --l-accent: 75%;
+  --l-confirm: 65%;
+  --l-warn: 60%;
+
+  --ff: sans;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --c-bg: 0;
+    --c-text: 0;
+    --c-fg: 0.15;
+    --c-color: 0.25;
+
+    --l-bg-dark: 90%;
+    --l-bg: 95%;
+    --l-bg-light: 100%;
+    --l-fg: 80%;
+    --l-text: 5%;
+    --l-text-muted: 25%;
+
+    --l-link: 45%;
+    --l-primary: 60%;
+    --l-accent: 60%;
+    --l-confirm: 50%;
+    --l-warn: 45%;
+  }
+}
+
+:root {
+  --h-color: var(--h-primary);
+  --l-color: var(--l-primary);
+
+  --bg-dark: oklch(var(--l-bg-dark) var(--c-bg) var(--h-color));
+  --bg: oklch(var(--l-bg) var(--c-bg) var(--h-color));
+  --bg-light: oklch(var(--l-bg-light) var(--c-bg) var(--h-color));
+  --fg: oklch(var(--l-fg) var(--c-bg) var(--h-color));
+  --text: oklch(var(--l-text) var(--c-text) var(--h-color));
+  --text-muted: oklch(var(--l-text-muted) var(--c-text) var(--h-color));
+
+  --color: oklch(var(--l-color) var(--c-color) var(--h-color));
+  --color-fg: oklch(var(--l-color) var(--c-fg) var(--h-color));
+
+  --link: oklch(var(--l-link) var(--c-color) var(--h-link));
+  --link-fg: oklch(var(--l-link) var(--c-fg) var(--h-link));
+
+  --primary: oklch(var(--l-primary) var(--c-color) var(--h-primary));
+  --primary-fg: oklch(var(--l-primary) var(--c-fg) var(--h-primary));
+
+  --accent: oklch(var(--l-accent) var(--c-color) var(--h-accent));
+  --accent-fg: oklch(var(--l-accent) var(--c-fg) var(--h-accent));
+
+  --confirm: oklch(var(--l-confirm) var(--c-color) var(--h-confirm));
+  --confirm-fg: oklch(var(--l-confirm) var(--c-fg) var(--h-confirm));
+
+  --warn: oklch(var(--l-warn) var(--c-color) var(--h-warn));
+  --warn-fg: oklch(var(--l-warn) var(--c-fg) var(--h-warn));
 }

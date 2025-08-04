@@ -10,6 +10,7 @@ font:
   logo: "'Comfortaa', 'Comfortaa Regular', 'Varela Round', Seravek, serif"
 
 scheme: dark
+force-scheme: no
 theme:
   dark:
     bg-chroma: 0
@@ -20,6 +21,7 @@ theme:
     bg-dark: 0
     bg: 5
     bg-light: 10
+    fg: 25
 
     text: 95
     text-muted: 75
@@ -33,6 +35,7 @@ theme:
     bg-dark: 90
     bg: 95
     bg-light: 100
+    fg: 80
 
     text: 5
     text-muted: 25

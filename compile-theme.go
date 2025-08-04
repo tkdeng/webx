@@ -2,22 +2,21 @@ package webx
 
 import (
 	"math"
+	"os"
 
 	"github.com/tkdeng/goutil"
+	"github.com/tkdeng/regex"
 )
 
 type ThemeConfig struct {
 	FontSize string
-	Font     struct {
-		Sans    string
-		Serif   string
-		Mono    string
-		Cursive string
-		Logo    string
-	}
+	Font     map[string]string
 
 	Scheme string
+	ForceScheme bool
 	Theme  map[string]*struct {
+		Scheme string
+
 		BGChroma    float64
 		TextChroma  float64
 		FGChroma    float64
@@ -26,6 +25,7 @@ type ThemeConfig struct {
 		BGDark  uint8
 		BG      uint8
 		BGLight uint8
+		FG      uint8
 
 		Text      uint8
 		TextMuted uint8
@@ -70,6 +70,12 @@ func (comp *compiler) compTheme() {
 		config.Theme[name].BG = uint8(math.Max(5, math.Min(95, float64(theme.BG))))
 		config.Theme[name].BGDark = uint8(math.Max(0, math.Max(float64(config.Theme[name].BG)-50, math.Min(float64(config.Theme[name].BG-5), float64(theme.BGDark)))))
 		config.Theme[name].BGLight = uint8(math.Min(100, math.Max(float64(config.Theme[name].BG+5), math.Min(float64(config.Theme[name].BG)+50, float64(theme.BGLight)))))
+
+		if config.Theme[name].BG < 50 {
+			config.Theme[name].FG = uint8(math.Min(100, math.Max(float64(config.Theme[name].BGLight+10), float64(theme.FG))))
+		} else {
+			config.Theme[name].FG = uint8(math.Min(float64(config.Theme[name].BGDark-10), math.Max(0, float64(theme.FG))))
+		}
 
 		textMin := float64(0)
 		textMax := float64(100)
@@ -155,5 +161,161 @@ func (comp *compiler) compTheme() {
 		config.Colors[name].Hue = hue.Get()
 	}
 
-	//todo: generate config.css theme file
+	cleanName := func(str string) []byte {
+		return regex.Comp(`[^\w_\-]`).RepLit([]byte(str), []byte{})
+	}
+
+	// generate config.css theme file
+	buf := []byte(":root {\n")
+
+	if config.FontSize != "" {
+		buf = append(buf, regex.JoinBytes(`  font-size: `, config.FontSize, ';', '\n')...)
+	}
+
+	buf = append(buf, '\n')
+
+	for name, font := range config.Font {
+		buf = append(buf, regex.JoinBytes(`  --ff-`, cleanName(name), `: `, font, ';', '\n')...)
+	}
+
+	buf = append(buf, '\n')
+
+	for name, color := range config.Colors {
+		buf = append(buf, regex.JoinBytes(`  --h-`, cleanName(name), `: `, int(color.Hue), ';', '\n')...)
+	}
+
+	buf = append(buf, '\n')
+
+	if theme, ok := config.Theme[config.Scheme]; ok {
+		/* if theme.Scheme == "dark" {
+			buf = append(buf, []byte("  color-scheme: dark light;\n")...)
+		} else if theme.Scheme == "light" {
+			buf = append(buf, []byte("  color-scheme: light dark;\n")...)
+		} else if theme.Scheme != "" {
+			buf = append(buf, regex.JoinBytes(`  color-scheme: `, theme.Scheme, ';', '\n')...)
+		} */
+
+		buf = append(buf, regex.JoinBytes(`  color-scheme: `, theme.Scheme, ';', '\n')...)
+
+		buf = append(buf, '\n')
+
+		buf = append(buf, regex.JoinBytes(`  --c-bg: `, theme.BGChroma, ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --c-text: `, theme.TextChroma, ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --c-fg: `, theme.FGChroma, ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --c-color: `, theme.ColorChroma, ';', '\n')...)
+
+		buf = append(buf, '\n')
+
+		buf = append(buf, regex.JoinBytes(`  --l-bg-dark: `, int(theme.BGDark), '%', ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --l-bg: `, int(theme.BG), '%', ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --l-bg-light: `, int(theme.BGLight), '%', ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --l-fg: `, int(theme.FG), '%', ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --l-text: `, int(theme.Text), '%', ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --l-text-muted: `, int(theme.TextMuted), '%', ';', '\n')...)
+
+		buf = append(buf, '\n')
+
+		for name, color := range config.Colors {
+			if theme.Scheme == "dark" {
+				buf = append(buf, regex.JoinBytes(`  --l-`, cleanName(name), `: `, int(color.Light), '%', ';', '\n')...)
+			} else {
+				buf = append(buf, regex.JoinBytes(`  --l-`, cleanName(name), `: `, int(color.Dark), '%', ';', '\n')...)
+			}
+		}
+	}
+
+	buf = append(buf, '\n')
+
+	for key, val := range config.Vars {
+		buf = append(buf, regex.JoinBytes(`  --`, key, `: `, val, ';', '\n')...)
+	}
+
+	buf = append(buf, []byte("}\n")...)
+
+	if !config.ForceScheme {
+		for name, theme := range config.Theme {
+			if name == config.Scheme {
+				continue
+			}
+	
+			buf = append(buf, regex.JoinBytes(
+				'\n', `@media (prefers-color-scheme: `, cleanName(name), `) {`, '\n',
+				`  :root {`, '\n',
+			)...)
+	
+			/* if theme.Scheme == "dark" {
+				buf = append(buf, []byte("    color-scheme: dark light;\n")...)
+			} else if theme.Scheme == "light" {
+				buf = append(buf, []byte("    color-scheme: light dark;\n")...)
+			} else if theme.Scheme != "" {
+				buf = append(buf, regex.JoinBytes(`    color-scheme: `, theme.Scheme, ';', '\n')...)
+			} */
+	
+			buf = append(buf, regex.JoinBytes(`    color-scheme: `, theme.Scheme, ';', '\n')...)
+	
+			buf = append(buf, '\n')
+	
+			buf = append(buf, regex.JoinBytes(`    --c-bg: `, theme.BGChroma, ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --c-text: `, theme.TextChroma, ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --c-fg: `, theme.FGChroma, ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --c-color: `, theme.ColorChroma, ';', '\n')...)
+	
+			buf = append(buf, '\n')
+	
+			buf = append(buf, regex.JoinBytes(`    --l-bg-dark: `, int(theme.BGDark), '%', ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --l-bg: `, int(theme.BG), '%', ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --l-bg-light: `, int(theme.BGLight), '%', ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --l-fg: `, int(theme.FG), '%', ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --l-text: `, int(theme.Text), '%', ';', '\n')...)
+			buf = append(buf, regex.JoinBytes(`    --l-text-muted: `, int(theme.TextMuted), '%', ';', '\n')...)
+	
+			buf = append(buf, '\n')
+	
+			for name, color := range config.Colors {
+				if theme.Scheme == "dark" {
+					buf = append(buf, regex.JoinBytes(`    --l-`, cleanName(name), `: `, int(color.Light), '%', ';', '\n')...)
+				} else {
+					buf = append(buf, regex.JoinBytes(`    --l-`, cleanName(name), `: `, int(color.Dark), '%', ';', '\n')...)
+				}
+			}
+	
+			buf = append(buf, []byte("  }\n}\n")...)
+		}
+	}
+
+
+	// add basic css color vars
+	buf = append(buf, []byte("\n:root {\n")...)
+
+	buf = append(buf, []byte("  --h-color: var(--h-primary);\n")...)
+	buf = append(buf, []byte("  --l-color: var(--l-primary);\n")...)
+
+	buf = append(buf, '\n')
+
+	buf = append(buf, regex.JoinBytes(`  --bg-dark: oklch(var(--l-bg-dark) var(--c-bg) var(--h-color))`, ';', '\n')...)
+	buf = append(buf, regex.JoinBytes(`  --bg: oklch(var(--l-bg) var(--c-bg) var(--h-color))`, ';', '\n')...)
+	buf = append(buf, regex.JoinBytes(`  --bg-light: oklch(var(--l-bg-light) var(--c-bg) var(--h-color))`, ';', '\n')...)
+	buf = append(buf, regex.JoinBytes(`  --fg: oklch(var(--l-fg) var(--c-bg) var(--h-color))`, ';', '\n')...)
+	buf = append(buf, regex.JoinBytes(`  --text: oklch(var(--l-text) var(--c-text) var(--h-color))`, ';', '\n')...)
+	buf = append(buf, regex.JoinBytes(`  --text-muted: oklch(var(--l-text-muted) var(--c-text) var(--h-color))`, ';', '\n')...)
+
+	buf = append(buf, '\n')
+
+	buf = append(buf, regex.JoinBytes(`  --color: oklch(var(--l-color) var(--c-color) var(--h-color))`, ';', '\n')...)
+	buf = append(buf, regex.JoinBytes(`  --color-fg: oklch(var(--l-color) var(--c-fg) var(--h-color))`, ';', '\n')...)
+
+	for name := range config.Colors {
+		buf = append(buf, '\n')
+
+		buf = append(buf, regex.JoinBytes(`  --`, cleanName(name), `: oklch(var(--l-`, cleanName(name), `) var(--c-color) var(--h-`, cleanName(name), `))`, ';', '\n')...)
+		buf = append(buf, regex.JoinBytes(`  --`, cleanName(name), `-fg: oklch(var(--l-`, cleanName(name), `) var(--c-fg) var(--h-`, cleanName(name), `))`, ';', '\n')...)
+	}
+
+	buf = append(buf, []byte("}\n")...)
+
+	if !comp.config.DebugMode {
+		minifyCSS(&buf, "config")
+	}
+
+	os.WriteFile(comp.config.Root+"/theme/config.css", buf, 0755)
 }

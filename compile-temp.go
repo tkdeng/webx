@@ -24,15 +24,6 @@ var tempScript []byte
 //go:embed templates/core.css
 var tempStyle []byte
 
-//go:embed templates/example/config.yml
-var tempExConfig []byte
-
-//go:embed templates/example/csp.yml
-var tempExCSP []byte
-
-//go:embed templates/example/config.css
-var tempExCssConfig []byte
-
 //go:embed templates/example/*
 var tempExample embed.FS
 

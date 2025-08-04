@@ -19,15 +19,19 @@ main.form {
 
   /* margin-bottom: 0; */
 
-  /* --primary: #17e6e6; */
-  /* --primary: #13e91d; */
-  /* --primary: #0f0; */
+  /* --color: #17e6e6; */
+  /* --color: #13e91d; */
+  /* --color: #0f0; */
 
   .bg {
     /* display: none !important; */
 
-    --bg: #0f0f0f;
-    --fg: #1f1f1f;
+    /* --bg: #0f0f0f; */
+    /* --fg: #1f1f1f; */
+    /* --fg: oklch(24% var(--c-bg) var(--h-color)); */
+
+    /* --bg: var(--bg-dark); */
+    /* --fg: oklch(from var(--bg) calc(l + 0.24) c h); */
 
     background: var(--bg);
     position: absolute;
@@ -50,7 +54,7 @@ main.form {
       position: absolute;
       width: 100%;
       height: 100%;
-      background: linear-gradient(var(--bg), var(--primary), var(--bg));
+      background: linear-gradient(var(--bg), var(--color), var(--bg));
       animation: bg-anim 5s linear infinite;
     }
 
@@ -64,7 +68,7 @@ main.form {
       transition: background 1.5s;
 
       &:hover {
-        background: var(--primary);
+        background: var(--color);
         transition: background 0.1s;
       }
 
@@ -104,7 +108,7 @@ main.form {
     h1, h2, h3, h4, h5, h6 {
       text-transform: uppercase;
       margin: 0;
-      color: var(--primary);
+      color: var(--color);
     }
 
     form {
@@ -136,11 +140,11 @@ main.form {
 
       &:hover, &:focus {
         outline: none;
-        box-shadow: 0 0 5px var(--primary);
+        box-shadow: 0 0 5px var(--color);
       }
 
       &[type="submit"] {
-        background: var(--primary-bg);
+        background: var(--color-fg);
         color: #ffffff;
         text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.25);
         cursor: pointer;
@@ -154,7 +158,7 @@ main.form {
 
       label {
         position: absolute;
-        color: var(--primary);
+        color: var(--color);
         top: 50%;
         left: 10px;
         transform: translateY(-50%);
@@ -168,7 +172,7 @@ main.form {
       &:has(input:focus) label, &:has(input:valid) label, &:has(input[readonly]) label {
         top: -10px;
         left: 20px;
-        background: var(--primary-bg);
+        background: var(--color-fg);
         color: #fff;
         font-size: 0.8em;
       }
