@@ -120,6 +120,7 @@ func compile(appConfig *Config) *compiler {
 	PrintMsg("warn", "Compiling Theme...", 50, false)
 
 	comp.compTheme()
+	comp.compThemeLive()
 
 	PrintMsg("warn", "Compiling WASM...", 50, false)
 

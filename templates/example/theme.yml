@@ -1,5 +1,5 @@
 vars:
-  ff: sans
+  myvar: value
 
 font-size: 1.2rem
 font:

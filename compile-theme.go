@@ -12,9 +12,9 @@ type ThemeConfig struct {
 	FontSize string
 	Font     map[string]string
 
-	Scheme string
+	Scheme      string
 	ForceScheme bool
-	Theme  map[string]*struct {
+	Theme       map[string]*struct {
 		Scheme string
 
 		BGChroma    float64
@@ -237,12 +237,12 @@ func (comp *compiler) compTheme() {
 			if name == config.Scheme {
 				continue
 			}
-	
+
 			buf = append(buf, regex.JoinBytes(
 				'\n', `@media (prefers-color-scheme: `, cleanName(name), `) {`, '\n',
 				`  :root {`, '\n',
 			)...)
-	
+
 			/* if theme.Scheme == "dark" {
 				buf = append(buf, []byte("    color-scheme: dark light;\n")...)
 			} else if theme.Scheme == "light" {
@@ -250,27 +250,27 @@ func (comp *compiler) compTheme() {
 			} else if theme.Scheme != "" {
 				buf = append(buf, regex.JoinBytes(`    color-scheme: `, theme.Scheme, ';', '\n')...)
 			} */
-	
+
 			buf = append(buf, regex.JoinBytes(`    color-scheme: `, theme.Scheme, ';', '\n')...)
-	
+
 			buf = append(buf, '\n')
-	
+
 			buf = append(buf, regex.JoinBytes(`    --c-bg: `, theme.BGChroma, ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --c-text: `, theme.TextChroma, ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --c-fg: `, theme.FGChroma, ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --c-color: `, theme.ColorChroma, ';', '\n')...)
-	
+
 			buf = append(buf, '\n')
-	
+
 			buf = append(buf, regex.JoinBytes(`    --l-bg-dark: `, int(theme.BGDark), '%', ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --l-bg: `, int(theme.BG), '%', ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --l-bg-light: `, int(theme.BGLight), '%', ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --l-fg: `, int(theme.FG), '%', ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --l-text: `, int(theme.Text), '%', ';', '\n')...)
 			buf = append(buf, regex.JoinBytes(`    --l-text-muted: `, int(theme.TextMuted), '%', ';', '\n')...)
-	
+
 			buf = append(buf, '\n')
-	
+
 			for name, color := range config.Colors {
 				if theme.Scheme == "dark" {
 					buf = append(buf, regex.JoinBytes(`    --l-`, cleanName(name), `: `, int(color.Light), '%', ';', '\n')...)
@@ -278,11 +278,10 @@ func (comp *compiler) compTheme() {
 					buf = append(buf, regex.JoinBytes(`    --l-`, cleanName(name), `: `, int(color.Dark), '%', ';', '\n')...)
 				}
 			}
-	
+
 			buf = append(buf, []byte("  }\n}\n")...)
 		}
 	}
-
 
 	// add basic css color vars
 	buf = append(buf, []byte("\n:root {\n")...)
@@ -318,4 +317,16 @@ func (comp *compiler) compTheme() {
 	}
 
 	os.WriteFile(comp.config.Root+"/theme/config.css", buf, 0755)
+}
+
+func (comp *compiler) compThemeLive() {
+	fw := goutil.FileWatcher()
+
+	fw.OnFileChange = func(path, op string) {
+		if path == comp.config.Root+"/theme/theme.yml" {
+			comp.compTheme()
+		}
+	}
+
+	fw.WatchDir(comp.config.Root + "/theme")
 }
