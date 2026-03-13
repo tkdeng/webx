@@ -173,3 +173,8 @@ colors:
     light: 60
     dark: 45
 ```
+
+## Docker Support
+
+Added modifications to make docker easier to work with, can be enabled by setting `Docker: yes` in the app `config.yml`.
+This feature is currently in beta.
