@@ -22,6 +22,8 @@ type Config struct {
 
 	PublicURI string
 
+	Docker bool
+
 	Origins []string
 	Proxies []string
 
@@ -117,8 +119,12 @@ func New(root string, config ...fiber.Config) (App, error) {
 	// preform header sanity check to reduce potential bot spam
 	app.Use(app.verifyHeaders())
 
-	// enforce specific domain and ip origins
-	app.Use(app.verifyOrigin(appConfig.Origins, appConfig.Proxies))
+	if !appConfig.Docker {
+		// enforce specific domain and ip origins
+		app.Use(app.verifyOrigin(appConfig.Origins, appConfig.Proxies))
+	}else{
+		app.Use(app.verifyOriginOnly(appConfig.Origins))
+	}
 
 	// auto redirect http to https
 	if appConfig.PortSSL != 0 {

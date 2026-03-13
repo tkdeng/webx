@@ -160,6 +160,36 @@ func (app *App) verifyOrigin(origin []string, proxy []string) func(c fiber.Ctx) 
 	}
 }
 
+// verifyOriginOnly can be added to `app.Use` to enforce that all connections
+// are coming through a specified domain (but unlike verifyOrigin, doesnt check for proxy ip)
+//
+// @origin: list of valid domains
+//
+// @handleErr: optional, allows you to define a function for handling invalid origins, instead of returning the default http error
+func (app *App) verifyOriginOnly(origin []string) func(c fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
+		hostname := goutil.Clean(c.Hostname())
+
+		validOrigin := false
+		if origin == nil || len(origin) == 0 {
+			validOrigin = true
+		} else {
+			for _, origin := range origin {
+				if origin == hostname {
+					validOrigin = true
+					break
+				}
+			}
+		}
+
+		if !validOrigin {
+			return app.Error(c, 403, "Origin Not Allowed: "+hostname)
+		}
+
+		return c.Next()
+	}
+}
+
 // redirectSSL can be added to `app.Use` to auto redirect http to https
 //
 // @httpPort: 80, @sslPort: 443

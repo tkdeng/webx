@@ -1,17 +1,17 @@
 :root {
   font-size: 1.2rem;
 
-  --ff-cursive: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;
-  --ff-logo: 'Comfortaa', 'Comfortaa Regular', 'Varela Round', Seravek, serif;
   --ff-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
   --ff-serif: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'URW Bookman L', 'Georgia Pro', Georgia, serif;
   --ff-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --ff-cursive: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;
+  --ff-logo: 'Comfortaa', 'Comfortaa Regular', 'Varela Round', Seravek, serif;
 
+  --h-link: 220;
+  --h-primary: 195;
   --h-accent: 170;
   --h-confirm: 145;
   --h-warn: 40;
-  --h-link: 220;
-  --h-primary: 195;
 
   color-scheme: dark;
 
@@ -27,11 +27,11 @@
   --l-text: 95%;
   --l-text-muted: 75%;
 
+  --l-link: 55%;
+  --l-primary: 75%;
   --l-accent: 75%;
   --l-confirm: 65%;
   --l-warn: 60%;
-  --l-link: 55%;
-  --l-primary: 75%;
 
   --myvar: value;
 }
@@ -52,11 +52,11 @@
     --l-text: 5%;
     --l-text-muted: 25%;
 
-    --l-link: 45%;
     --l-primary: 60%;
     --l-accent: 60%;
     --l-confirm: 50%;
     --l-warn: 45%;
+    --l-link: 45%;
   }
 }
 
@@ -74,12 +74,6 @@
   --color: oklch(var(--l-color) var(--c-color) var(--h-color));
   --color-fg: oklch(var(--l-color) var(--c-fg) var(--h-color));
 
-  --confirm: oklch(var(--l-confirm) var(--c-color) var(--h-confirm));
-  --confirm-fg: oklch(var(--l-confirm) var(--c-fg) var(--h-confirm));
-
-  --warn: oklch(var(--l-warn) var(--c-color) var(--h-warn));
-  --warn-fg: oklch(var(--l-warn) var(--c-fg) var(--h-warn));
-
   --link: oklch(var(--l-link) var(--c-color) var(--h-link));
   --link-fg: oklch(var(--l-link) var(--c-fg) var(--h-link));
 
@@ -88,4 +82,10 @@
 
   --accent: oklch(var(--l-accent) var(--c-color) var(--h-accent));
   --accent-fg: oklch(var(--l-accent) var(--c-fg) var(--h-accent));
+
+  --confirm: oklch(var(--l-confirm) var(--c-color) var(--h-confirm));
+  --confirm-fg: oklch(var(--l-confirm) var(--c-fg) var(--h-confirm));
+
+  --warn: oklch(var(--l-warn) var(--c-color) var(--h-warn));
+  --warn-fg: oklch(var(--l-warn) var(--c-fg) var(--h-warn));
 }

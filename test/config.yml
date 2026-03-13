@@ -8,6 +8,8 @@ csp: no
 
 DebugMode: yes
 
+Docker: yes
+
 port_http: 8080
 port_ssl: 8443
 
