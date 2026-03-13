@@ -54,11 +54,20 @@ func main(){
 
 ```
 
+## App Files and Config
+
 - Page Head: `head.html` || `head.md` (embedded into the \<head> of the document)
 - Page Body: `body.html` || `body.md` (embedded into the \<body> of the document)
 - Child Pages: `#page.html` || `#page.md` (used as the default for child pages, without modifying the current directory of pages)
 - Dynamic Pages: `@api.html` || `@api.md` (will not render by default, but can be called by your apis)
 - Content Security Policy: `csp.yml` (only available in root of pages directory)
+
+## Docker Support
+
+Added modifications to make docker easier to work with, can be enabled by setting `Docker: yes` in the app `config.yml`.
+This feature is currently in beta.
+
+## HTML
 
 ```html
 
@@ -173,8 +182,3 @@ colors:
     light: 60
     dark: 45
 ```
-
-## Docker Support
-
-Added modifications to make docker easier to work with, can be enabled by setting `Docker: yes` in the app `config.yml`.
-This feature is currently in beta.
