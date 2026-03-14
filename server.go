@@ -277,7 +277,6 @@ func (app *App) Render(c fiber.Ctx, url string, vars ...Map) error {
 			c.Set(fiber.HeaderContentSecurityPolicy, string(cspValue))
 
 			c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
-			c.SendStatus(200)
 			return c.Send(buf)
 		}
 	}
@@ -291,7 +290,6 @@ func (app *App) Render(c fiber.Ctx, url string, vars ...Map) error {
 		if c.Get(fiber.HeaderAcceptEncoding) != "gzip" {
 			if buf, err := Gunzip(path); err == nil {
 				c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
-				c.SendStatus(200)
 
 				return c.Send(buf)
 			}
@@ -308,7 +306,6 @@ func (app *App) Render(c fiber.Ctx, url string, vars ...Map) error {
 		}
 
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
-		c.SendStatus(200)
 
 		if len(vars) == 0 {
 			vars = append(vars, Map{})
@@ -320,7 +317,6 @@ func (app *App) Render(c fiber.Ctx, url string, vars ...Map) error {
 	}
 
 	c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
-	c.SendStatus(200)
 
 	return c.SendFile(path)
 }
@@ -330,11 +326,10 @@ func (app *App) Render(c fiber.Ctx, url string, vars ...Map) error {
 // if the page is not found, it will return a default error page
 func (app *App) Error(c fiber.Ctx, status uint16, msg string) error {
 	c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
-	c.SendStatus(int(status))
 
 	path, err := goutil.JoinPath(app.Config.Root+"/dist", "@"+strconv.FormatUint(uint64(status), 10)+".html")
 	if err != nil {
-		return c.SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
+		return c.Status(int(status)).SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
 	}
 
 	dynamic := false
@@ -342,18 +337,18 @@ func (app *App) Error(c fiber.Ctx, status uint16, msg string) error {
 		dynamic = true
 		path, err = goutil.JoinPath(app.Config.Root+"/dist", "@error.html")
 		if err != nil {
-			return c.SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
+			return c.Status(int(status)).SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
 		}
 	}
 
 	if _, err := os.Stat(path); err != nil {
-		return c.SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
+		return c.Status(int(status)).SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
 	}
 
 	if dynamic {
 		buf, err := os.ReadFile(path)
 		if err != nil {
-			return c.SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
+			return c.Status(int(status)).SendString("<h1>Error " + strconv.FormatUint(uint64(status), 10) + "</h1><h2>" + msg + "</h2>")
 		}
 
 		app.compiler.compileDynamicPage(&buf, Map{
@@ -361,8 +356,8 @@ func (app *App) Error(c fiber.Ctx, status uint16, msg string) error {
 			"msg":   msg,
 		})
 
-		return c.Send(buf)
+		return c.Status(int(status)).Send(buf)
 	}
 
-	return c.SendFile(path)
+	return c.Status(int(status)).SendFile(path)
 }
