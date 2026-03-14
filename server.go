@@ -127,6 +127,10 @@ func New(root string, config ...fiber.Config) (App, error) {
 
 	app.Use(helmet.New(Helmet))
 
+	app.Use("/ping", func(c fiber.Ctx) error {
+		return c.SendString("pong!")
+	})
+
 	// preform header sanity check to reduce potential bot spam
 	app.Use(app.verifyHeaders())
 
