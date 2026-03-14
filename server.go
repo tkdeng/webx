@@ -122,7 +122,7 @@ func New(root string, config ...fiber.Config) (App, error) {
 	if !appConfig.Docker {
 		// enforce specific domain and ip origins
 		app.Use(app.verifyOrigin(appConfig.Origins, appConfig.Proxies))
-	}else{
+	} else {
 		app.Use(app.verifyOriginOnly(appConfig.Origins))
 	}
 
@@ -185,6 +185,23 @@ func (app *App) Listen() error {
 	}
 
 	return app.listenAutoTLS(app.Config.PortHTTP, app.Config.PortSSL, app.Config.Root+"/db/ssl/auto_ssl")
+}
+
+// ListenHTTP listens only to the http port
+func (app *App) ListenHTTP() error {
+	app.Use(func(c fiber.Ctx) error {
+		return app.Error(c, 404, "Page Not Found")
+	})
+
+	if DebugCompiler {
+		return errors.New("DebugCompiler is enabled, please disable it before running the server")
+	}
+
+	app.hasFailedSSL = true
+
+	port := ":" + strconv.Itoa(int(app.Config.PortHTTP))
+
+	return app.App.Listen(port)
 }
 
 // Compile runs the compiler without loading a new server
