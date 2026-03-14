@@ -85,7 +85,7 @@ func New(root string, config ...fiber.Config) (App, error) {
 	if appConfig.PortSSL == 0 {
 		if appConfig.PortHTTP == 80 {
 			appConfig.PortSSL = 443
-		}else if appConfig.PortHTTP == 8080 {
+		} else if appConfig.PortHTTP == 8080 {
 			appConfig.PortSSL = 8443
 		}
 	}
@@ -152,8 +152,8 @@ func New(root string, config ...fiber.Config) (App, error) {
 	app.Get("/assets/*", static.New(appConfig.Root+"/plugins/assets", static.Config{Compress: compressAssets}))
 
 	// reduce bot spam on post requests
-	app.Post("/api/*", app.BlockBotHeader)
-	app.Post("/apis/*", app.BlockBotHeader)
+	// app.Post("/api/*", app.BlockBotHeader)
+	// app.Post("/apis/*", app.BlockBotHeader)
 
 	// app.Use("/*", static.New(appConfig.Root+"/dist", static.Config{Compress: compressAssets}))
 
