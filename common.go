@@ -195,7 +195,7 @@ func (app *App) verifyOriginOnly(origin []string) func(c fiber.Ctx) error {
 // @httpPort: 80, @sslPort: 443
 func (app *App) redirectSSL(httpPort, sslPort uint16) func(c fiber.Ctx) error {
 	return func(c fiber.Ctx) error {
-		if c.Secure() || app.hasFailedSSL {
+		if c.Secure() || *app.hasFailedSSL {
 			return c.Next()
 		}
 
@@ -259,7 +259,7 @@ func (app *App) listenAutoTLS(httpPort, sslPort uint16, certPath string, proxy .
 				CertKeyFile: certPath + ".key",
 			})
 			if err != nil {
-				app.hasFailedSSL = true
+				*app.hasFailedSSL = true
 			}
 		}()
 	}

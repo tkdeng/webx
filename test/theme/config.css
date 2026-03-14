@@ -1,11 +1,11 @@
 :root {
   font-size: 1.2rem;
 
-  --ff-cursive: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;
-  --ff-logo: 'Comfortaa', 'Comfortaa Regular', 'Varela Round', Seravek, serif;
   --ff-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif;
   --ff-serif: Superclarendon, 'Bookman Old Style', 'URW Bookman', 'URW Bookman L', 'Georgia Pro', Georgia, serif;
   --ff-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --ff-cursive: 'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive;
+  --ff-logo: 'Comfortaa', 'Comfortaa Regular', 'Varela Round', Seravek, serif;
 
   --h-link: 220;
   --h-primary: 195;
@@ -52,11 +52,11 @@
     --l-text: 5%;
     --l-text-muted: 25%;
 
+    --l-link: 45%;
+    --l-primary: 60%;
     --l-accent: 60%;
     --l-confirm: 50%;
     --l-warn: 45%;
-    --l-link: 45%;
-    --l-primary: 60%;
   }
 }
 

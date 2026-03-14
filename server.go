@@ -62,7 +62,7 @@ type App struct {
 
 	compiler *compiler
 
-	hasFailedSSL bool
+	hasFailedSSL *bool
 }
 
 type Map map[string]string
@@ -77,11 +77,18 @@ func New(root string, config ...fiber.Config) (App, error) {
 		Desc:     "A Web Server.",
 
 		PortHTTP: 8080,
-		PortSSL:  8443,
 	}
 
 	// load config file
 	loadConfig(root, &appConfig)
+
+	if appConfig.PortSSL == 0 {
+		if appConfig.PortHTTP == 80 {
+			appConfig.PortSSL = 443
+		}else if appConfig.PortHTTP == 8080 {
+			appConfig.PortSSL = 8443
+		}
+	}
 
 	// compile src
 	compiler := compile(&appConfig)
@@ -107,11 +114,15 @@ func New(root string, config ...fiber.Config) (App, error) {
 		}
 	}
 
+	hasFailedSSL := false
+
 	app := App{
 		App:    fiber.New(config[0]),
 		Config: appConfig,
 
 		compiler: compiler,
+
+		hasFailedSSL: &hasFailedSSL,
 	}
 
 	app.Use(helmet.New(Helmet))
@@ -197,7 +208,7 @@ func (app *App) ListenHTTP() error {
 		return errors.New("DebugCompiler is enabled, please disable it before running the server")
 	}
 
-	app.hasFailedSSL = true
+	*app.hasFailedSSL = true
 
 	port := ":" + strconv.Itoa(int(app.Config.PortHTTP))
 
