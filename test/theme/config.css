@@ -27,11 +27,11 @@
   --l-text: 95%;
   --l-text-muted: 75%;
 
-  --l-link: 55%;
-  --l-primary: 75%;
   --l-accent: 75%;
   --l-confirm: 65%;
   --l-warn: 60%;
+  --l-link: 55%;
+  --l-primary: 75%;
 
   --myvar: value;
 }
@@ -52,11 +52,11 @@
     --l-text: 5%;
     --l-text-muted: 25%;
 
-    --l-primary: 60%;
-    --l-accent: 60%;
     --l-confirm: 50%;
     --l-warn: 45%;
     --l-link: 45%;
+    --l-primary: 60%;
+    --l-accent: 60%;
   }
 }
 
@@ -74,9 +74,6 @@
   --color: oklch(var(--l-color) var(--c-color) var(--h-color));
   --color-fg: oklch(var(--l-color) var(--c-fg) var(--h-color));
 
-  --link: oklch(var(--l-link) var(--c-color) var(--h-link));
-  --link-fg: oklch(var(--l-link) var(--c-fg) var(--h-link));
-
   --primary: oklch(var(--l-primary) var(--c-color) var(--h-primary));
   --primary-fg: oklch(var(--l-primary) var(--c-fg) var(--h-primary));
 
@@ -88,4 +85,7 @@
 
   --warn: oklch(var(--l-warn) var(--c-color) var(--h-warn));
   --warn-fg: oklch(var(--l-warn) var(--c-fg) var(--h-warn));
+
+  --link: oklch(var(--l-link) var(--c-color) var(--h-link));
+  --link-fg: oklch(var(--l-link) var(--c-fg) var(--h-link));
 }
